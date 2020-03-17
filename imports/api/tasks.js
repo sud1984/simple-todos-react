@@ -10,7 +10,6 @@ if (Meteor.isServer) {
   Meteor.publish('tasks', function tasksPublication() {
     return Tasks.find({
       $or: [
-        { private: { $ne: true } },
         { owner: this.userId },
       ],
     });
@@ -69,4 +68,16 @@ Meteor.methods({
 
     Tasks.update(taskId, { $set: { private: setToPrivate } });
   },
+  'tasks.setUserCategory'(taskId, setToUserCategory) {
+    check(taskId, String);
+    check(setToUserCategory, String);
+
+    const task = Tasks.findOne(taskId);
+
+    if (task.owner !== this.userId) {
+      throw new Meteor.Error('not-authorized');
+    }
+
+    Tasks.update(taskId, {$set: {category: setToUserCategory} });
+  }
 });
